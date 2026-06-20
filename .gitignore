@@ -1,0 +1,45 @@
+# Composer
+/vendor/
+composer.phar
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# PHPUnit / testing
+.phpunit.result.cache
+/phpunit.xml
+/coverage/
+
+# PHPStan / Psalm
+.phpstan.cache/
+.psalm/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and cache
+/logs/
+/log/
+/cache/
+/tmp/
+*.log
+
+# Build artifacts
+/build/
+/dist/
+
+# Node (frontend assets)
+node_modules/
+npm-debug.log*
+yarn-error.log*
