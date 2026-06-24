@@ -1,0 +1,145 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use App\Support\Config;
+
+$app = require dirname(__DIR__) . '/app/06-support/bootstrap.php';
+$basePath = $app['basePath'];
+
+$args = $argv;
+array_shift($args);
+$command = $args[0] ?? '';
+
+switch ($command) {
+    case 'health':
+        echo json_encode(['status' => 'ok', 'timestamp' => date('c')], JSON_PRETTY_PRINT) . "\n";
+        exit(0);
+    case 'migrate':
+        $greenfield = in_array('--greenfield', $args, true);
+        bifrost_console_migrate($greenfield);
+        exit(0);
+    case '':
+        echo "Tilgjengelige kommandoer:\n  health\n  migrate [--greenfield]\n";
+        exit(0);
+    default:
+        fwrite(STDERR, "Ukjent kommando: $command\n");
+        exit(1);
+}
+
+function bifrost_run_sql_file(\PDO $pdo, string $file): void
+{
+    $sql = file_get_contents($file);
+    if ($sql === false) {
+        throw new \RuntimeException("Kunne ikke lese SQL-fil: $file");
+    }
+    $sql = preg_replace('/--.*$/m', '', $sql);
+    $sql = preg_replace('/\/\*.*?\*\//s', '', $sql);
+    $statements = array_filter(
+        array_map('trim', explode(';', $sql)),
+        static fn ($stmt) => $stmt !== ''
+    );
+    foreach ($statements as $statement) {
+        if (trim($statement) === '') {
+            continue;
+        }
+        $stmt = $pdo->query($statement);
+        if ($stmt instanceof \PDOStatement) {
+            $stmt->fetchAll();
+            $stmt->closeCursor();
+        }
+    }
+}
+
+function bifrost_console_migrate(bool $greenfield): void
+{
+    echo "Starter migreringer …\n";
+    if ($greenfield) {
+        echo "Profil: greenfield (inkluderer 001_initial_bifrost_schema.sql)\n";
+    } else {
+        echo "Profil: additive (auth_*.sql + bifrost_*.sql)\n";
+    }
+    echo "\n";
+
+    if (Config::get('services.storage_driver', 'pdo') !== 'pdo') {
+        fwrite(STDERR, "migrate krever STORAGE_DRIVER=pdo.\n");
+        exit(1);
+    }
+
+    $migrationsDir = Config::get('services.migrations_path');
+    if (!is_string($migrationsDir) || !is_dir($migrationsDir)) {
+        fwrite(STDERR, "Mangler migreringsmappe: $migrationsDir\n");
+        exit(1);
+    }
+
+    try {
+        $pdo = (new \App\Support\Container())->getPdo();
+        if ($pdo->getAttribute(\PDO::ATTR_DRIVER_NAME) === 'mysql') {
+            $pdo->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+        }
+
+        $pdo->exec("
+            CREATE TABLE IF NOT EXISTS schema_migrations (
+                migration VARCHAR(255) PRIMARY KEY,
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+        echo "schema_migrations er opprettet/sjekket.\n";
+
+        $stmt = $pdo->query('SELECT migration FROM schema_migrations');
+        $applied = $stmt ? $stmt->fetchAll(\PDO::FETCH_COLUMN) : [];
+        if ($stmt instanceof \PDOStatement) {
+            $stmt->closeCursor();
+        }
+        $applied = array_flip(array_map('strval', $applied));
+
+        $files = glob($migrationsDir . '/*.sql') ?: [];
+        sort($files, SORT_NATURAL);
+
+        $appliedCount = 0;
+        foreach ($files as $file) {
+            $name = basename($file);
+
+            if (!$greenfield && !str_starts_with($name, 'bifrost_') && !str_starts_with($name, 'auth_')) {
+                echo "Hoppet over: $name (ikke auth_* / bifrost_* — bruk --greenfield for full skjema)\n";
+                continue;
+            }
+
+            if ($greenfield && $name !== '001_initial_bifrost_schema.sql'
+                && !str_starts_with($name, 'bifrost_') && !str_starts_with($name, 'auth_')) {
+                echo "Hoppet over: $name (ikke del av greenfield-profil)\n";
+                continue;
+            }
+
+            if (isset($applied[$name])) {
+                echo "Hoppet over: $name (allerede kjørt)\n";
+                continue;
+            }
+
+            echo "Kjører: $name\n";
+            $raw = file_get_contents($file);
+            if ($raw === false || trim($raw) === '') {
+                echo "  (tom fil, registreres likevel)\n";
+            } else {
+                bifrost_run_sql_file($pdo, $file);
+            }
+
+            $ins = $pdo->prepare('INSERT INTO schema_migrations (migration) VALUES (?)');
+            $ins->execute([$name]);
+            $ins->closeCursor();
+            echo "Fullført: $name\n";
+            $appliedCount++;
+        }
+
+        echo "\n";
+        if ($appliedCount > 0) {
+            echo "Ferdig: $appliedCount ny(e) migrering(er).\n";
+        } else {
+            echo "Alle relevante migreringer er allerede kjørt.\n";
+        }
+    } catch (\Throwable $e) {
+        fwrite(STDERR, 'Feil: ' . $e->getMessage() . "\n");
+        exit(1);
+    }
+}

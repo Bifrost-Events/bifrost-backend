@@ -1,3 +1,6 @@
+# Local dev artifacts
+cookies.txt
+
 # Composer
 /vendor/
 composer.phar

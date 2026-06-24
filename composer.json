@@ -1,0 +1,23 @@
+{
+    "name": "sjurivar/bifrost-backend",
+    "description": "Bifrost API backend",
+    "type": "project",
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\Controller\\": "app/03-controller/",
+            "App\\Service\\": "app/04-services/",
+            "App\\Support\\": "app/06-support/",
+            "App\\Contracts\\": "app/Contracts/",
+            "App\\Repositories\\": "app/05-repositories/"
+        }
+    },
+    "scripts": {
+        "serve": "php -S localhost:8082 -t public public/cli-server-router.php"
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}
