@@ -1,0 +1,27 @@
+# Deploy via Deploy-Admin (FTP). ProISP: r1464762 → bifrost-backend/public/
+# Krav: filområde api.bifrostevents, app_folder=bifrost-backend/, environment hjellum-no-bifrostevents-backendname: Deploy
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch eller tag
+        required: true
+        default: main
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-admin-ftp-github-secrets.yml
+    permissions:
+      contents: read
+      deployments: write
+    with:
+      ref: ${{ github.event.inputs.ref || github.ref_name }}
+      manifest_path: deploy-manifest.json
+      checkout_submodules: false
+      composer_install: true
+      environments: '["hjellum-no-bifrostevents-backend"]'
+    secrets: inherit

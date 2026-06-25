@@ -72,6 +72,42 @@ php bin/console migrate
 
 Konfigurer Apache virtual host med document root `bifrost-backend/public` og host `api.bifrost.local`.
 
+## Produksjon (api.bifrostevents.no)
+
+Admin-ui snakker server-til-server med backend (`BACKEND_API_URL`). Backend ligger på **egen webroot** (`r1464762`), ikke under admin-ui.
+
+| App | Webroot | Deploy-mappe | ProISP document root |
+|-----|---------|--------------|----------------------|
+| Backend | `r1464762` | `bifrost-backend/` | `.../r1464762/bifrost-backend/public/` |
+
+### Deploy-Admin
+
+| Felt | Verdi |
+|------|-------|
+| Filområde | `api.bifrostevents` (r1464762) |
+| `app_folder` | `bifrost-backend/` |
+| GitHub Environment | `hjellum-no-bifrostevents-backend` |
+| Branch | `main` |
+
+Kjør **Synk secrets** for `bifrost-backend`.
+
+### ProISP
+
+`api.bifrostevents.no` → rotmappe `.../r1464762/bifrost-backend/public/`.
+
+### `.env` på server (`bifrost-backend/.env`)
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+STORAGE_DRIVER=pdo
+DB_DSN=mysql:host=<proisp-db-host>;dbname=jaktfeltkarusell_prod;charset=utf8mb4
+DB_USER=<db-bruker>
+DB_PASS=<db-passord>
+```
+
+Migreringer er allerede kjørt additive på `jaktfeltkarusell_prod` — du trenger normalt ikke `bin/console migrate` på webhotellet med mindre nye `bifrost_*.sql` er lagt til.
+
 ## Teste
 
 ```bash

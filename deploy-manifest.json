@@ -1,0 +1,37 @@
+{
+  "description": "Bifrost Backend API – filtre for deploy-package (FTP).",
+  "public_dir": "public",
+  "include": [
+    "app/",
+    "bin/",
+    "config/",
+    "public/",
+    "routes/",
+    "vendor/",
+    "composer.json",
+    "composer.lock",
+    ".env.example"
+  ],
+  "exclude": [
+    ".git",
+    ".github",
+    ".env",
+    ".env.*",
+    "node_modules",
+    "tests",
+    "cookies.txt",
+    "*.log",
+    ".idea",
+    ".vscode"
+  ],
+  "ftpExclude": [
+    ".git",
+    ".github",
+    "node_modules",
+    ".env",
+    "cookies.txt"
+  ],
+  "remoteProtect": [
+    ".env"
+  ]
+}
