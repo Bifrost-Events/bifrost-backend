@@ -78,14 +78,16 @@ Admin-ui snakker server-til-server med backend (`BACKEND_API_URL`). Backend ligg
 
 | App | Webroot | Deploy-mappe | ProISP document root |
 |-----|---------|--------------|----------------------|
-| Backend | `r1464762` | `bifrost-backend/` | `.../r1464762/bifrost-backend/public/` |
+| Backend | `r1464762` | `bifrostbackend/` | `.../r1464762/bifrostbackend/public/` |
+
+ProISP tillater ikke bindestrek (`-`) i mappenavn på serveren.
 
 ### Deploy-Admin
 
 | Felt | Verdi |
 |------|-------|
 | Filområde | `api.bifrostevents` (r1464762) |
-| `app_folder` | `bifrost-backend/` |
+| `app_folder` | `bifrostbackend/` |
 | GitHub Environment | `hjellum-no-bifrostevents-backend` |
 | Branch | `main` |
 
@@ -93,9 +95,9 @@ Kjør **Synk secrets** for `bifrost-backend`.
 
 ### ProISP
 
-`api.bifrostevents.no` → rotmappe `.../r1464762/bifrost-backend/public/`.
+`api.bifrostevents.no` → rotmappe `.../r1464762/bifrostbackend/public/`.
 
-### `.env` på server (`bifrost-backend/.env`)
+### `.env` på server (`bifrostbackend/.env`)
 
 ```env
 APP_ENV=production

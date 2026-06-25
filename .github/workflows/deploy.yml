@@ -1,5 +1,6 @@
-# Deploy via Deploy-Admin (FTP). ProISP: r1464762 → bifrost-backend/public/
-# Krav: filområde api.bifrostevents, app_folder=bifrost-backend/, environment hjellum-no-bifrostevents-backendname: Deploy
+# Deploy via Deploy-Admin (FTP). ProISP: r1464762 → bifrostbackend/public/
+# Krav: filområde api.bifrostevents, app_folder=bifrostbackend/ (uten bindestrek – ProISP)
+name: Deploy
 
 on:
   push:
