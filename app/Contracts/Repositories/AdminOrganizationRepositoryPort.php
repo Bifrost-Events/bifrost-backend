@@ -33,4 +33,7 @@ interface AdminOrganizationRepositoryPort
 
     /** @return array<string, mixed>|null */
     public function findMemberById(int $memberId): ?array;
+
+    /** @return list<array<string, mixed>> */
+    public function listByAuthUserId(int $authUserId): array;
 }

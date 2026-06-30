@@ -10,6 +10,7 @@ namespace App\Service;
 
 
 
+use App\Contracts\Repositories\AdminUserRepositoryPort;
 use App\Contracts\Repositories\UserRepositoryPort;
 
 
@@ -24,10 +25,10 @@ final class AuthService
 
 
 
-    public function __construct(private readonly UserRepositoryPort $userRepo)
-
-    {
-
+    public function __construct(
+        private readonly UserRepositoryPort $userRepo,
+        private readonly ?AdminUserRepositoryPort $adminUserRepo = null,
+    ) {
     }
 
 
@@ -234,6 +235,62 @@ final class AuthService
 
         return self::ADMIN_TENANT_ROLES;
 
+    }
+
+    /**
+     * @return array{ok: true, user: array<string, mixed>}|array{ok: false, error: string, status: int, errors?: array<string, string>}
+     */
+    public function registerParticipant(
+        string $email,
+        string $password,
+        string $firstName,
+        string $lastName,
+        string $phone,
+        ?int $tenantId = null,
+    ): array {
+        if ($this->adminUserRepo === null) {
+            return ['ok' => false, 'error' => 'Registration unavailable', 'status' => 503];
+        }
+
+        $email = strtolower(trim($email));
+        $firstName = trim($firstName);
+        $lastName = trim($lastName);
+        $phone = trim($phone);
+        $name = trim($firstName . ' ' . $lastName);
+
+        $errors = [];
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Ugyldig e-post';
+        }
+        if (strlen($password) < 8) {
+            $errors['password'] = 'Passord må være minst 8 tegn';
+        }
+        if ($firstName === '' || $lastName === '') {
+            $errors['name'] = 'Fornavn og etternavn er påkrevd';
+        }
+        if ($phone === '') {
+            $errors['phone'] = 'Telefon er påkrevd';
+        }
+        if ($errors !== []) {
+            return ['ok' => false, 'error' => 'Validation failed', 'status' => 422, 'errors' => $errors];
+        }
+
+        if ($this->userRepo->findByEmail($email) !== null) {
+            return ['ok' => false, 'error' => 'E-post er allerede registrert', 'status' => 422, 'errors' => ['email' => 'E-post er allerede registrert']];
+        }
+
+        $user = $this->adminUserRepo->create([
+            'email' => $email,
+            'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+            'name' => $name,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'phone' => $phone,
+            'is_active' => true,
+            'first_registered_tenant_id' => $tenantId,
+        ]);
+
+        return ['ok' => true, 'user' => $this->buildUserPayload($user)];
     }
 
 }

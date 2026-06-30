@@ -83,10 +83,17 @@ final class PdoAdminUserRepository implements AdminUserRepositoryPort
 
     public function create(array $data): array
     {
+        $firstName = trim((string) ($data['first_name'] ?? ''));
+        $lastName = trim((string) ($data['last_name'] ?? ''));
         $name = trim((string) ($data['name'] ?? ''));
-        $parts = $name !== '' ? preg_split('/\s+/', $name, 2) : ['', ''];
-        $firstName = $parts[0] ?? '';
-        $lastName = $parts[1] ?? '';
+        if ($name === '' && ($firstName !== '' || $lastName !== '')) {
+            $name = trim($firstName . ' ' . $lastName);
+        }
+        if ($firstName === '' && $lastName === '' && $name !== '') {
+            $parts = $name !== '' ? preg_split('/\s+/', $name, 2) : ['', ''];
+            $firstName = (string) ($parts[0] ?? '');
+            $lastName = (string) ($parts[1] ?? '');
+        }
 
         $stmt = $this->pdo->prepare(
             'INSERT INTO auth_users (email, password_hash, name, first_name, last_name, phone, is_active, first_registered_tenant_id)

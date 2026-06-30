@@ -12,9 +12,12 @@ final class Auth
 {
     public static function service(): AuthService
     {
-        $pdo = (new Container())->getPdo();
+        $container = new Container();
 
-        return new AuthService(new PdoUserRepository($pdo));
+        return new AuthService(
+            new PdoUserRepository($container->getPdo()),
+            $container->getAdminUserRepo(),
+        );
     }
 
     /** @return array<string, mixed>|null */

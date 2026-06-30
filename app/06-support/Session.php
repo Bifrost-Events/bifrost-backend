@@ -6,6 +6,8 @@ namespace App\Support;
 
 final class Session
 {
+    private const SESSION_COOKIE_NAME = 'BIFROSTSESSID';
+
     private const SESSION_KEY = 'bifrost_auth_user_id';
 
     /** @var bool|null */
@@ -23,7 +25,7 @@ final class Session
         }
 
         self::configureCookieParams();
-        session_name('BIFROSTSESSID');
+        session_name(self::SESSION_COOKIE_NAME);
         session_start();
     }
 
@@ -35,7 +37,7 @@ final class Session
 
     public static function getUserId(): ?int
     {
-        if (!self::isActive() && !isset($_COOKIE[session_name()])) {
+        if (!self::isActive() && !isset($_COOKIE[self::SESSION_COOKIE_NAME])) {
             return null;
         }
 

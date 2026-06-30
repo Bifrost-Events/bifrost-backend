@@ -183,6 +183,27 @@ final class PdoAdminOrganizationRepository implements AdminOrganizationRepositor
         return $row === false ? null : $row;
     }
 
+    public function listByAuthUserId(int $authUserId): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT ' . self::SELECT_ORG . ', m.role AS member_role
+             FROM organization_members m
+             INNER JOIN organizations o ON o.id = m.organization_id
+             INNER JOIN tenants t ON t.id = o.tenant_id
+             WHERE m.auth_user_id = ?
+             ORDER BY o.name'
+        );
+        $stmt->execute([$authUserId]);
+        $rows = $stmt->fetchAll() ?: [];
+
+        return array_map(function (array $row): array {
+            $org = $this->hydrateOrganization($row);
+            $org['member_role'] = (string) ($row['member_role'] ?? 'OWNER');
+
+            return $org;
+        }, $rows);
+    }
+
     /** @param array<string, mixed> $row @return array<string, mixed> */
     private function hydrateOrganization(array $row): array
     {
