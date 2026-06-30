@@ -84,12 +84,13 @@ ProISP tillater ikke bindestrek (`-`) i mappenavn på serveren.
 
 ### Deploy-Admin
 
-| Felt | Verdi |
-|------|-------|
-| Filområde | `api.bifrostevents` (r1464762) |
-| `app_folder` | `bifrostbackend/` |
-| GitHub Environment | `hjellum-no-bifrostevents-backend` |
-| Branch | `main` |
+| Miljø | GitHub Environment | `app_folder` | Trigger |
+|-------|-------------------|--------------|---------|
+| staging | `hjellum-no-api-bifrostevents-staging` | `bifrostbackend/` | push `main`, `repository_dispatch` |
+| test | `hjellum-no-api-bifrostevents-test` | `bifrostbackend/` | release-pipeline |
+| prod | `hjellum-no-api-bifrostevents` | `bifrostbackend/` | `repository_dispatch` / tag via pipeline |
+
+Filområde prod: `api.bifrostevents.no` (r1464762). Se [Deploy-Admin docs](../../platformstandard/Deploy-Admin/docs/bifrost-deploy-environments.md).
 
 Kjør **Synk secrets** for `bifrost-backend`.
 

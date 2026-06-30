@@ -1,28 +1,74 @@
-# Deploy via Deploy-Admin (FTP). ProISP: r1464762 → bifrostbackend/public/
-# Krav: filområde api.bifrostevents, app_folder=bifrostbackend/ (uten bindestrek – ProISP)
+# Deploy via Deploy-Admin (FTP). ProISP: api.bifrostevents.no
+# main → staging | repository_dispatch → staging/test/prod | tag v* håndteres via release-pipeline i public-ui
 name: Deploy
 
 on:
   push:
     branches: [main]
-    tags: ['v*']
+  repository_dispatch:
+    types: [deploy-staging, deploy-test, deploy-prod]
   workflow_dispatch:
     inputs:
       ref:
         description: Branch eller tag
         required: true
         default: main
+      target:
+        description: Deploy-miljø
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - test
+          - prod
 
 jobs:
-  deploy:
+  deploy-staging:
+    if: >-
+      github.ref == 'refs/heads/main' ||
+      (github.event_name == 'repository_dispatch' && github.event.action == 'deploy-staging') ||
+      (github.event_name == 'workflow_dispatch' && inputs.target == 'staging')
     uses: ./.github/workflows/deploy-admin-ftp-github-secrets.yml
     permissions:
       contents: read
       deployments: write
     with:
-      ref: ${{ github.event.inputs.ref || github.ref_name }}
+      ref: ${{ github.event.client_payload.ref || github.event.inputs.ref || github.ref_name }}
       manifest_path: deploy-manifest.json
       checkout_submodules: false
       composer_install: true
-      environments: '["hjellum-no-bifrostevents-backend"]'
+      environments: '["hjellum-no-api-bifrostevents-staging"]'
+    secrets: inherit
+
+  deploy-test:
+    if: >-
+      (github.event_name == 'repository_dispatch' && github.event.action == 'deploy-test') ||
+      (github.event_name == 'workflow_dispatch' && inputs.target == 'test')
+    uses: ./.github/workflows/deploy-admin-ftp-github-secrets.yml
+    permissions:
+      contents: read
+      deployments: write
+    with:
+      ref: ${{ github.event.client_payload.ref || github.event.inputs.ref || 'main' }}
+      manifest_path: deploy-manifest.json
+      checkout_submodules: false
+      composer_install: true
+      environments: '["hjellum-no-api-bifrostevents-test"]'
+    secrets: inherit
+
+  deploy-prod:
+    if: >-
+      (github.event_name == 'repository_dispatch' && github.event.action == 'deploy-prod') ||
+      (github.event_name == 'workflow_dispatch' && inputs.target == 'prod')
+    uses: ./.github/workflows/deploy-admin-ftp-github-secrets.yml
+    permissions:
+      contents: read
+      deployments: write
+    with:
+      ref: ${{ github.event.client_payload.ref || github.event.inputs.ref || github.ref_name }}
+      manifest_path: deploy-manifest.json
+      checkout_submodules: false
+      composer_install: true
+      environments: '["hjellum-no-api-bifrostevents"]'
     secrets: inherit
