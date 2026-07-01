@@ -62,7 +62,7 @@ final class DeployResetController
 
             return Response::json([
                 'status' => 'error',
-                'message' => Environment::safeMessage($e),
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
