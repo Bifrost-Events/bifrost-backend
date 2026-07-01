@@ -8,4 +8,5 @@
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
     RewriteRule ^reset-staging$ reset-staging.php [L,QSA]
+    RewriteRule ^process-reset-trigger$ process-reset-trigger.php [L,QSA]
 </IfModule>

@@ -20,8 +20,14 @@ switch ($command) {
         $greenfield = in_array('--greenfield', $args, true);
         bifrost_console_migrate($greenfield);
         exit(0);
+    case 'staging-reset':
+        bifrost_console_staging_reset();
+        exit(0);
+    case 'process-reset-trigger':
+        bifrost_console_process_reset_trigger();
+        exit(0);
     case '':
-        echo "Tilgjengelige kommandoer:\n  health\n  migrate [--greenfield]\n";
+        echo "Tilgjengelige kommandoer:\n  health\n  migrate [--greenfield]\n  staging-reset\n  process-reset-trigger\n";
         exit(0);
     default:
         fwrite(STDERR, "Ukjent kommando: $command\n");
@@ -114,6 +120,40 @@ function bifrost_console_migrate(bool $greenfield): void
         } else {
             echo "Alle relevante migreringer er allerede kjørt.\n";
         }
+    } catch (\Throwable $e) {
+        fwrite(STDERR, 'Feil: ' . $e->getMessage() . "\n");
+        exit(1);
+    }
+}
+
+function bifrost_console_staging_reset(): void
+{
+    if (!\App\Support\Environment::isStaging()) {
+        fwrite(STDERR, "staging-reset krever APP_ENV=staging.\n");
+        exit(1);
+    }
+
+    try {
+        $basePath = dirname(__DIR__);
+        $result = (new \App\Service\StagingResetService($basePath))->resetMigrateAndSeed();
+        echo json_encode($result, JSON_PRETTY_PRINT) . "\n";
+    } catch (\Throwable $e) {
+        fwrite(STDERR, 'Feil: ' . $e->getMessage() . "\n");
+        exit(1);
+    }
+}
+
+function bifrost_console_process_reset_trigger(): void
+{
+    if (!\App\Support\Environment::isStaging()) {
+        fwrite(STDERR, "process-reset-trigger krever APP_ENV=staging.\n");
+        exit(1);
+    }
+
+    try {
+        $basePath = dirname(__DIR__);
+        $result = (new \App\Service\StagingResetTriggerService($basePath))->processPendingTrigger();
+        echo json_encode($result ?? ['status' => 'noop', 'message' => 'No pending trigger'], JSON_PRETTY_PRINT) . "\n";
     } catch (\Throwable $e) {
         fwrite(STDERR, 'Feil: ' . $e->getMessage() . "\n");
         exit(1);

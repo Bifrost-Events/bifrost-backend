@@ -39,6 +39,7 @@ jobs:
       checkout_submodules: false
       composer_install: true
       environments: '["staging_api_bifrostevents_no"]'
+      upload_staging_reset_trigger: true
     secrets: inherit
 
   deploy-test:

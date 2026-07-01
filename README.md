@@ -94,6 +94,8 @@ Filområde prod: `api.bifrostevents.no` (r1464762). Se [Deploy-Admin docs](../..
 
 Kjør **Synk secrets** for `bifrost-backend`.
 
+**Staging DB-reset i CI:** Sett repository secret `STAGING_DEPLOY_SECRET` (samme verdi som på staging-server). Ved staging-deploy lastes `staging-reset.trigger` opp via FTP; ProISP cron trenger `GET /deploy/process-reset-trigger` (se [staging-playwright.md](../bifrost-public-ui/docs/staging-playwright.md)).
+
 ### ProISP
 
 `api.bifrostevents.no` → rotmappe `.../r1464762/bifrostbackend/public/`.

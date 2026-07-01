@@ -10,6 +10,7 @@ DirectoryIndex index.php
 
     # Staging Playwright reset (before front controller)
     RewriteRule ^deploy/reset-staging$ deploy/reset-staging.php [L]
+    RewriteRule ^deploy/process-reset-trigger$ deploy/process-reset-trigger.php [L]
 
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
