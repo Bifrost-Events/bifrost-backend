@@ -275,10 +275,8 @@ CREATE TABLE IF NOT EXISTS participants (
     CONSTRAINT fk_participants_owner_user
         FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT fk_participants_owner_org
-        FOREIGN KEY (owner_organization_id) REFERENCES organizations(id) ON DELETE SET NULL,
-    CONSTRAINT chk_participants_owner CHECK (
-        owner_user_id IS NOT NULL OR owner_organization_id IS NOT NULL
-    )
+        FOREIGN KEY (owner_organization_id) REFERENCES organizations(id) ON DELETE SET NULL
+    -- Eier-regel (user ELLER org): håndheves i applikasjon — MariaDB/ProISP støtter ikke CHECK på kolonnereferanser (error 1901).
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS participant_identifiers (
