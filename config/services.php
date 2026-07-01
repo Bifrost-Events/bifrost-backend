@@ -16,5 +16,7 @@ if ($storageDriver === 'pdo') {
 return [
     'storage_driver' => $storageDriver,
     'migrations_path' => $_ENV['MIGRATIONS_PATH']
-        ?? dirname(__DIR__) . '/../bifrost-shared/database/migrations',
+        ?? dirname(__DIR__) . '/database/migrations',
+    'seeds_path' => $_ENV['SEEDS_PATH']
+        ?? dirname(__DIR__) . '/database/seeds',
 ];

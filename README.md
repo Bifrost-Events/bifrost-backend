@@ -98,6 +98,12 @@ Kjør **Synk secrets** for `bifrost-backend`.
 
 `api.bifrostevents.no` → rotmappe `.../r1464762/bifrostbackend/public/`.
 
+### Staging Playwright-reset
+
+`POST /deploy/reset-staging` nullstiller staging-DB for automatiske tester (kun `APP_ENV=staging`, Bearer `STAGING_DEPLOY_SECRET`). Se [bifrost-public-ui/docs/staging-playwright.md](../bifrost-public-ui/docs/staging-playwright.md).
+
+Mal: [.env.staging.example](.env.staging.example)
+
 ### `.env` på server (`bifrostbackend/.env`)
 
 ```env

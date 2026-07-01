@@ -1,0 +1,11 @@
+# Staging deploy-endepunkt (Apache)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /deploy/
+
+    # Forward Authorization header (Apache strips it by default)
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    RewriteRule ^reset-staging$ reset-staging.php [L,QSA]
+</IfModule>
