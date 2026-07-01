@@ -54,7 +54,7 @@ jobs:
       manifest_path: deploy-manifest.json
       checkout_submodules: false
       composer_install: true
-      environments: '["hjellum-no-api-bifrostevents-test"]'
+      environments: '["test_api_bifrostevents_no"]'
     secrets: inherit
 
   deploy-prod:

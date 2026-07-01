@@ -87,7 +87,7 @@ ProISP tillater ikke bindestrek (`-`) i mappenavn på serveren.
 | Miljø | GitHub Environment | `app_folder` | Trigger |
 |-------|-------------------|--------------|---------|
 | staging | `hjellum-no-api-bifrostevents-staging` | `bifrostbackend/` | push `main`, `repository_dispatch` |
-| test | `hjellum-no-api-bifrostevents-test` | `bifrostbackend/` | release-pipeline |
+| test | `test_api_bifrostevents_no` (`test.api.bifrostevents.no`, r1465208) | `bifrostbackend/` | release-pipeline |
 | prod | `hjellum-no-api-bifrostevents` | `bifrostbackend/` | `repository_dispatch` / tag via pipeline |
 
 Filområde prod: `api.bifrostevents.no` (r1464762). Se [Deploy-Admin docs](../../platformstandard/Deploy-Admin/docs/bifrost-deploy-environments.md).
