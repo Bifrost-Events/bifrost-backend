@@ -38,3 +38,12 @@ WHERE t.slug = 'namdal'
     SELECT 1 FROM tenant_domains td WHERE td.host = 'staging.namdal.jaktfeltkarusell.no'
   )
 LIMIT 1;
+
+INSERT INTO tenant_domains (tenant_id, host, purpose, is_primary)
+SELECT t.id, 'staging.jaktfeltkarusell.no', 'public', 0
+FROM tenants t
+WHERE t.slug = 'namdal'
+  AND NOT EXISTS (
+    SELECT 1 FROM tenant_domains td WHERE td.host = 'staging.jaktfeltkarusell.no'
+  )
+LIMIT 1;
