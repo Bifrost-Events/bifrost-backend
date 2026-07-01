@@ -28,30 +28,6 @@ switch ($command) {
         exit(1);
 }
 
-function bifrost_run_sql_file(\PDO $pdo, string $file): void
-{
-    $sql = file_get_contents($file);
-    if ($sql === false) {
-        throw new \RuntimeException("Kunne ikke lese SQL-fil: $file");
-    }
-    $sql = preg_replace('/--.*$/m', '', $sql);
-    $sql = preg_replace('/\/\*.*?\*\//s', '', $sql);
-    $statements = array_filter(
-        array_map('trim', explode(';', $sql)),
-        static fn ($stmt) => $stmt !== ''
-    );
-    foreach ($statements as $statement) {
-        if (trim($statement) === '') {
-            continue;
-        }
-        $stmt = $pdo->query($statement);
-        if ($stmt instanceof \PDOStatement) {
-            $stmt->fetchAll();
-            $stmt->closeCursor();
-        }
-    }
-}
-
 function bifrost_console_migrate(bool $greenfield): void
 {
     echo "Starter migreringer …\n";
@@ -122,7 +98,7 @@ function bifrost_console_migrate(bool $greenfield): void
             if ($raw === false || trim($raw) === '') {
                 echo "  (tom fil, registreres likevel)\n";
             } else {
-                bifrost_run_sql_file($pdo, $file);
+                (new \App\Service\SqlScriptRunner())->runFile($pdo, $file);
             }
 
             $ins = $pdo->prepare('INSERT INTO schema_migrations (migration) VALUES (?)');
