@@ -4,6 +4,13 @@ DirectoryIndex index.php
     RewriteEngine On
     RewriteBase /
 
+    # Forward Authorization header (Apache strips it by default)
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Staging Playwright reset (before front controller)
+    RewriteRule ^deploy/reset-staging$ deploy/reset-staging.php [L]
+
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.php [QSA,L]
