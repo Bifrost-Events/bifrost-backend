@@ -54,7 +54,7 @@ jobs:
       manifest_path: deploy-manifest.json
       checkout_submodules: false
       composer_install: true
-      environments: '["test_jaktfeltcup_no"]'
+      environments: '["hjellum-no-api-bifrostevents-test"]'
     secrets: inherit
 
   deploy-prod:
