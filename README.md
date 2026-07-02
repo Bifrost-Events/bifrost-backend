@@ -86,23 +86,22 @@ ProISP tillater ikke bindestrek (`-`) i mappenavn på serveren.
 
 | Miljø | GitHub Environment | `app_folder` | Trigger |
 |-------|-------------------|--------------|---------|
-| staging | `hjellum-no-api-bifrostevents-staging` | `bifrostbackend/` | push `main`, `repository_dispatch` |
-| test | `test_api_bifrostevents_no` (`test.api.bifrostevents.no`, r1465208) | `bifrostbackend/` | release-pipeline |
-| prod | `hjellum-no-api-bifrostevents` | `bifrostbackend/` | `repository_dispatch` / tag via pipeline |
+| test | `test` | `bifrostbackend/` | `npm run release:deploy` (etter quality-godkjenning) |
+| production | `production` | `bifrostbackend/` | `npm run release:deploy` (etter test-godkjenning) |
 
-Filområde prod: `api.bifrostevents.no` (r1464762). Se [Deploy-Admin docs](../../platformstandard/Deploy-Admin/docs/bifrost-deploy-environments.md).
+Legacy staging/test-miljøer (`staging_api_bifrostevents_no`, `test_api_bifrostevents_no`) brukes ikke i ny release-flyt.
 
-Kjør **Synk secrets** for `bifrost-backend`.
+Filområde prod: `api.bifrostevents.no` (r1464762). Se [Deploy-Admin docs](../../platformstandard/Deploy-Admin/docs/bifrost-deploy-environments.md) og [release/README.md](../bifrost-public-ui/release/README.md).
 
-**Staging DB-reset i CI:** Sett repository secret `STAGING_DEPLOY_SECRET` (samme verdi som på staging-server). Ved staging-deploy lastes `staging-reset.trigger` opp via FTP; ProISP cron trenger `GET /deploy/process-reset-trigger` (se [staging-playwright.md](../bifrost-public-ui/docs/staging-playwright.md)).
+Kjør `npm run release:sync-secrets` fra bifrost-public-ui for å synke FTP til GitHub Environments `test` og `production`.
 
 ### ProISP
 
 `api.bifrostevents.no` → rotmappe `.../r1464762/bifrostbackend/public/`.
 
-### Staging Playwright-reset
+### Staging Playwright-reset (historisk)
 
-`POST /deploy/reset-staging` nullstiller staging-DB for automatiske tester (kun `APP_ENV=staging`, Bearer `STAGING_DEPLOY_SECRET`). Se [bifrost-public-ui/docs/staging-playwright.md](../bifrost-public-ui/docs/staging-playwright.md).
+`POST /deploy/reset-staging` nullstiller staging-DB for automatiske tester (kun `APP_ENV=staging`, Bearer `STAGING_DEPLOY_SECRET`). Ny release-flyt bruker lokal quality i stedet – se [staging-playwright.md](../bifrost-public-ui/docs/staging-playwright.md).
 
 Mal: [.env.staging.example](.env.staging.example)
 

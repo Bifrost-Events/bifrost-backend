@@ -13,6 +13,7 @@ use App\Controller\HealthController;
 use App\Controller\ParticipantController;
 use App\Controller\PublicController;
 use App\Controller\TenantController;
+use App\Controller\VersionController;
 use App\Support\Container;
 use App\Support\Router;
 
@@ -36,6 +37,7 @@ return function (array $app): Router {
     $adminSeasons = new AdminSeasonController($admin);
 
     $router->get('/api/health', fn () => (new HealthController())());
+    $router->get('/api/version', fn () => (new VersionController())());
     $router->post('/api/auth/login', fn () => $auth->login());
     $router->post('/api/auth/participant/login', fn () => $auth->participantLogin());
     $router->post('/api/auth/participant/register', fn () => $auth->participantRegister());

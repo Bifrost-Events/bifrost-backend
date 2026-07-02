@@ -1,0 +1,75 @@
+# Ny release-deploy: workflow_dispatch med environment + release_id + ref.
+# Ingen staging DB-reset – read-only smoke etter deploy.
+name: Deploy release
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Deploy-miljø (GitHub Environment)
+        required: true
+        type: choice
+        options:
+          - test
+          - production
+      release_id:
+        description: Release ID fra release-manifest
+        required: true
+        type: string
+      ref:
+        description: Git commit SHA eller tag
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: deploy-release-${{ inputs.environment }}-${{ inputs.release_id }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-admin-ftp-github-secrets.yml
+    with:
+      ref: ${{ inputs.ref }}
+      manifest_path: deploy-manifest.json
+      checkout_submodules: false
+      composer_install: true
+      environments: ${{ format('["{0}"]', inputs.environment) }}
+      release_id: ${{ inputs.release_id }}
+      upload_staging_reset_trigger: false
+    secrets: inherit
+
+  smoke:
+    name: Read-only smoke (${{ inputs.environment }})
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout (smoke script)
+        uses: actions/checkout@v5
+
+      - name: Run HTTP smoke
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${APP_URL:-}" ]; then
+            echo "::error::APP_URL er ikke satt for environment ${{ inputs.environment }}"
+            exit 1
+          fi
+          chmod +x .github/scripts/http-smoke.sh
+          .github/scripts/http-smoke.sh backend "$APP_URL" "${{ inputs.release_id }}" "${{ inputs.ref }}"
+
+      - name: Smoke summary
+        if: always()
+        run: |
+          {
+            echo "### Release smoke"
+            echo "- Environment: \`${{ inputs.environment }}\`"
+            echo "- Release ID: \`${{ inputs.release_id }}\`"
+            echo "- Ref: \`${{ inputs.ref }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
